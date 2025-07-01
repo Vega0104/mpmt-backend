@@ -52,8 +52,4 @@ Backend de la plateforme collaborative de gestion de projet (Spring Boot + Postg
 
 ## 🙋‍♂️ Auteur
 
-- [Ton nom](https://www.linkedin.com/in/tonprofil) — contact pro
-
----
-
-> **Ce projet fait partie de mon portfolio et sert de vitrine technique pour la gestion de projet logiciel full stack.**
+- [Gaël El Mokhtari](www.linkedin.com/in/gael-el-mokhtari-000646222)
