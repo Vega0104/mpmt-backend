@@ -1,4 +1,4 @@
-# mpmt-backenda# MPMT Backend
+MPMT Backend
 
 Backend de la plateforme collaborative de gestion de projet (Spring Boot + PostgreSQL).
 
