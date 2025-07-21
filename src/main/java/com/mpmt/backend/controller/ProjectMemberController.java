@@ -48,4 +48,22 @@ public class ProjectMemberController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<ProjectMember> updateRole(
+            @PathVariable Long id,
+            @RequestBody RoleUpdateRequest request // DTO simple
+    ) {
+        Optional<ProjectMember> updated = projectMemberService.updateRole(id, request.getRole());
+        return updated.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // DTO pour désérialiser le body JSON {"role": "ADMIN"}
+    public static class RoleUpdateRequest {
+        private String role;
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+    }
+
 }

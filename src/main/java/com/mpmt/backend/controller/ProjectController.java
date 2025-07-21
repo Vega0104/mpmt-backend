@@ -1,7 +1,9 @@
 package com.mpmt.backend.controller;
 
 import com.mpmt.backend.entity.Project;
+import com.mpmt.backend.entity.ProjectMember;
 import com.mpmt.backend.service.ProjectService;
+import com.mpmt.backend.service.ProjectMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,12 @@ import java.util.Optional;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectMemberService projectMemberService;
 
     @Autowired
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, ProjectMemberService projectMemberService) {
         this.projectService = projectService;
+        this.projectMemberService = projectMemberService;
     }
 
     @GetMapping
@@ -53,5 +57,12 @@ public class ProjectController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+
+    @GetMapping("/{id}/members")
+    public ResponseEntity<List<ProjectMember>> getMembersForProject(@PathVariable Long id) {
+        List<ProjectMember> members = projectMemberService.findMembersByProjectId(id);
+        return ResponseEntity.ok(members);
     }
 }

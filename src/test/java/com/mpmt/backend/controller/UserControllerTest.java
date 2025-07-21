@@ -2,7 +2,14 @@ package com.mpmt.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpmt.backend.entity.User;
+import com.mpmt.backend.entity.Project;
+import com.mpmt.backend.entity.Notification;
+import com.mpmt.backend.entity.Task;
 import com.mpmt.backend.service.UserService;
+import com.mpmt.backend.service.ProjectMemberService;
+import com.mpmt.backend.service.TaskAssignmentService;
+import com.mpmt.backend.service.NotificationService;
+import com.mpmt.backend.service.TaskService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
@@ -28,6 +36,14 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+    @MockBean
+    private ProjectMemberService projectMemberService;
+    @MockBean
+    private TaskAssignmentService taskAssignmentService;
+    @MockBean
+    private NotificationService notificationService;
+    @MockBean
+    private TaskService taskService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -124,5 +140,51 @@ class UserControllerTest {
 
         mockMvc.perform(delete("/api/users/77"))
                 .andExpect(status().isNotFound());
+    }
+
+    // ===============================
+    // ===== TESTS ENDPOINTS AVANCÉS ==
+    // ===============================
+
+    @Test
+    @DisplayName("GET /api/users/{id}/projects doit retourner les projets du user")
+    void getProjectsForUser() throws Exception {
+        Project project = new Project();
+        project.setId(10L); project.setName("ProjectX");
+        Mockito.when(projectMemberService.findProjectsByUserId(1L))
+                .thenReturn(Collections.singletonList(project));
+
+        mockMvc.perform(get("/api/users/1/projects"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10L))
+                .andExpect(jsonPath("$[0].name").value("ProjectX"));
+    }
+
+    @Test
+    @DisplayName("GET /api/users/{id}/notifications doit retourner les notifications du user")
+    void getNotificationsForUser() throws Exception {
+        Notification notif = new Notification();
+        notif.setId(100L); notif.setUserId(1L); notif.setContent("Notif content");
+        Mockito.when(notificationService.getByUserId(1L))
+                .thenReturn(Collections.singletonList(notif));
+
+        mockMvc.perform(get("/api/users/1/notifications"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(100L))
+                .andExpect(jsonPath("$[0].content").value("Notif content"));
+    }
+
+    @Test
+    @DisplayName("GET /api/users/{id}/tasks doit retourner les tâches assignées au user")
+    void getAssignedTasksForUser() throws Exception {
+        Task task = new Task();
+        task.setId(5L); task.setName("Ma tâche");
+        Mockito.when(taskAssignmentService.findTasksAssignedToUser(1L))
+                .thenReturn(Collections.singletonList(task));
+
+        mockMvc.perform(get("/api/users/1/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5L))
+                .andExpect(jsonPath("$[0].name").value("Ma tâche"));
     }
 }

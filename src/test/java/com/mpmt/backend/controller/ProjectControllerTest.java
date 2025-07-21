@@ -2,6 +2,10 @@ package com.mpmt.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpmt.backend.entity.Project;
+import com.mpmt.backend.entity.ProjectMember;
+import com.mpmt.backend.entity.RoleType;
+import com.mpmt.backend.entity.User;
+import com.mpmt.backend.service.ProjectMemberService;
 import com.mpmt.backend.service.ProjectService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,8 @@ class ProjectControllerTest {
 
     @MockBean
     private ProjectService projectService;
+    @MockBean
+    private ProjectMemberService projectMemberService; // <--- Ajouté !
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -73,5 +79,31 @@ class ProjectControllerTest {
         mockMvc.perform(get("/api/projects"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Projet API"));
+    }
+
+    @Test
+    @DisplayName("GET /api/projects/{id}/members retourne les membres du projet")
+    void shouldGetMembersForProject() throws Exception {
+        Project project = new Project();
+        project.setId(10L);
+        project.setName("Projet API");
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("user_member");
+
+        ProjectMember pm = new ProjectMember();
+        pm.setId(100L);
+        pm.setRole(RoleType.MEMBER);
+        pm.setUser(user);
+        pm.setProject(project);
+
+        Mockito.when(projectMemberService.findMembersByProjectId(10L))
+                .thenReturn(Collections.singletonList(pm));
+
+        mockMvc.perform(get("/api/projects/10/members"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].user.username").value("user_member"))
+                .andExpect(jsonPath("$[0].role").value("MEMBER"));
     }
 }

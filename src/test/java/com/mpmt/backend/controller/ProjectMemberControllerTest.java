@@ -73,4 +73,5 @@ class ProjectMemberControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].project.name").value("ProjetJUnit"));
     }
+
 }

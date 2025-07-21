@@ -1,7 +1,14 @@
 package com.mpmt.backend.controller;
 
 import com.mpmt.backend.entity.User;
+import com.mpmt.backend.entity.Project;
+import com.mpmt.backend.entity.Notification;
+import com.mpmt.backend.entity.Task;
 import com.mpmt.backend.service.UserService;
+import com.mpmt.backend.service.ProjectMemberService;
+import com.mpmt.backend.service.NotificationService;
+import com.mpmt.backend.service.TaskAssignmentService;
+import com.mpmt.backend.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +22,24 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final ProjectMemberService projectMemberService;
+    private final TaskAssignmentService taskAssignmentService;
+    private final NotificationService notificationService;
+    private final TaskService taskService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(
+            UserService userService,
+            ProjectMemberService projectMemberService,
+            TaskAssignmentService taskAssignmentService,
+            NotificationService notificationService,
+            TaskService taskService
+    ) {
         this.userService = userService;
+        this.projectMemberService = projectMemberService;
+        this.taskAssignmentService = taskAssignmentService;
+        this.notificationService = notificationService;
+        this.taskService = taskService;
     }
 
     @GetMapping
@@ -56,5 +77,25 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // --- ENDPOINTS AVANCÉS ---
+
+    @GetMapping("/{id}/projects")
+    public ResponseEntity<List<Project>> getProjectsForUser(@PathVariable Long id) {
+        List<Project> projects = projectMemberService.findProjectsByUserId(id);
+        return ResponseEntity.ok(projects);
+    }
+
+    @GetMapping("/{id}/notifications")
+    public ResponseEntity<List<Notification>> getNotificationsForUser(@PathVariable Long id) {
+        List<Notification> notifications = notificationService.getByUserId(id);
+        return ResponseEntity.ok(notifications);
+    }
+
+    @GetMapping("/{id}/tasks")
+    public ResponseEntity<List<Task>> getAssignedTasksForUser(@PathVariable Long id) {
+        List<Task> tasks = taskAssignmentService.findTasksAssignedToUser(id);
+        return ResponseEntity.ok(tasks);
     }
 }
