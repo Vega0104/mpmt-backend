@@ -78,4 +78,34 @@ public class ProjectController {
         List<Task> tasks = taskService.getTasksByProjectId(id);
         return ResponseEntity.ok(tasks);
     }
+
+
+    @PostMapping("/{id}/tasks")
+    public ResponseEntity<Task> createTaskForProject(@PathVariable Long id, @RequestBody Task task) {
+
+        if (projectService.getProjectById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        task.setProjectId(id);
+        Task created = taskService.createTask(task);
+        return ResponseEntity.ok(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Project> updateProject(@PathVariable Long id, @RequestBody Project updatedProject) {
+        Optional<Project> optionalProject = projectService.getProjectById(id);
+        if (optionalProject.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Project existingProject = optionalProject.get();
+        existingProject.setName(updatedProject.getName());
+        existingProject.setDescription(updatedProject.getDescription());
+        existingProject.setStartDate(updatedProject.getStartDate());
+
+        Project savedProject = projectService.updateProject(existingProject);
+        return ResponseEntity.ok(savedProject);
+    }
+
+
+
 }

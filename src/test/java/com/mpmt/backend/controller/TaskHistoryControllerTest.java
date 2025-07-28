@@ -6,15 +6,19 @@ import com.mpmt.backend.service.TaskHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -27,7 +31,7 @@ class TaskHistoryControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private TaskHistoryService service;
+    private TaskHistoryService taskHistoryService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -41,7 +45,7 @@ class TaskHistoryControllerTest {
         history.setChangeDate(new Date());
         history.setChangeDescription("History created");
 
-        when(service.createHistory(any(TaskHistory.class))).thenReturn(history);
+        when(taskHistoryService.createHistory(any(TaskHistory.class))).thenReturn(history);
 
         mockMvc.perform(post("/api/task-histories")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,10 +63,36 @@ class TaskHistoryControllerTest {
         history.setChangedBy(2L);
         history.setChangeDescription("Task updated");
 
-        when(service.getHistoryById(1L)).thenReturn(Optional.of(history));
+        when(taskHistoryService.getHistoryById(1L)).thenReturn(Optional.of(history));
 
         mockMvc.perform(get("/api/task-histories/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.changeDescription").value("Task updated"));
+    }
+
+    @Test
+    @DisplayName("GET /api/tasks/{id}/histories retourne l'historique de la tâche")
+    void shouldGetHistoriesForTask() throws Exception {
+        TaskHistory h1 = new TaskHistory();
+        h1.setId(1L);
+        h1.setTaskId(50L);
+        h1.setChangeDescription("Création");
+        h1.setChangeDate(new Date());
+
+        TaskHistory h2 = new TaskHistory();
+        h2.setId(2L);
+        h2.setTaskId(50L);
+        h2.setChangeDescription("Modification titre");
+        h2.setChangeDate(new Date());
+
+        Mockito.when(taskHistoryService.getHistoriesByTaskId(50L))
+                .thenReturn(Arrays.asList(h1, h2));
+
+        mockMvc.perform(get("/api/tasks/50/histories")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].changeDescription").value("Création"))
+                .andExpect(jsonPath("$[1].changeDescription").value("Modification titre"));
     }
 }

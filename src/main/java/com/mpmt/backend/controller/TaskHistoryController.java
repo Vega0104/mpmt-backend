@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/task-histories")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class TaskHistoryController {
 
@@ -20,29 +20,37 @@ public class TaskHistoryController {
         this.service = service;
     }
 
-    @GetMapping
+    // RESTful: Lister l'historique d'une tâche donnée
+    @GetMapping("/tasks/{taskId}/histories")
+    public ResponseEntity<List<TaskHistory>> getHistoriesForTask(@PathVariable Long taskId) {
+        List<TaskHistory> histories = service.getHistoriesByTaskId(taskId);
+        return ResponseEntity.ok(histories);
+    }
+
+    // Legacy endpoints pour compatibilité
+    @GetMapping("/task-histories")
     public List<TaskHistory> getAllHistories() {
         return service.getAllHistories();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/task-histories/{id}")
     public ResponseEntity<TaskHistory> getHistoryById(@PathVariable Long id) {
         return service.getHistoryById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/by-task/{taskId}")
+    @GetMapping("/task-histories/by-task/{taskId}")
     public List<TaskHistory> getHistoriesByTaskId(@PathVariable Long taskId) {
         return service.getHistoriesByTaskId(taskId);
     }
 
-    @PostMapping
+    @PostMapping("/task-histories")
     public ResponseEntity<TaskHistory> createHistory(@RequestBody TaskHistory taskHistory) {
         return ResponseEntity.ok(service.createHistory(taskHistory));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/task-histories/{id}")
     public ResponseEntity<Void> deleteHistory(@PathVariable Long id) {
         service.deleteHistory(id);
         return ResponseEntity.noContent().build();

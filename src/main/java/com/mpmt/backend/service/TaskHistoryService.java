@@ -26,6 +26,9 @@ public class TaskHistoryService {
         return repository.findById(id);
     }
 
+    /**
+     * Liste tous les historiques liés à une tâche (pour GET /api/tasks/{id}/histories)
+     */
     public List<TaskHistory> getHistoriesByTaskId(Long taskId) {
         return repository.findByTaskId(taskId);
     }
