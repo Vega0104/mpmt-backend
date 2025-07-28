@@ -2,8 +2,10 @@ package com.mpmt.backend.controller;
 
 import com.mpmt.backend.entity.Project;
 import com.mpmt.backend.entity.ProjectMember;
+import com.mpmt.backend.entity.Task;
 import com.mpmt.backend.service.ProjectService;
 import com.mpmt.backend.service.ProjectMemberService;
+import com.mpmt.backend.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +20,17 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
+    private final TaskService taskService;
 
     @Autowired
-    public ProjectController(ProjectService projectService, ProjectMemberService projectMemberService) {
+    public ProjectController(
+            ProjectService projectService,
+            ProjectMemberService projectMemberService,
+            TaskService taskService
+    ) {
         this.projectService = projectService;
         this.projectMemberService = projectMemberService;
+        this.taskService = taskService;
     }
 
     @GetMapping
@@ -59,10 +67,15 @@ public class ProjectController {
         }
     }
 
-
     @GetMapping("/{id}/members")
     public ResponseEntity<List<ProjectMember>> getMembersForProject(@PathVariable Long id) {
         List<ProjectMember> members = projectMemberService.findMembersByProjectId(id);
         return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/{id}/tasks")
+    public ResponseEntity<List<Task>> getTasksForProject(@PathVariable Long id) {
+        List<Task> tasks = taskService.getTasksByProjectId(id);
+        return ResponseEntity.ok(tasks);
     }
 }

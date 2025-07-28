@@ -5,8 +5,10 @@ import com.mpmt.backend.entity.Project;
 import com.mpmt.backend.entity.ProjectMember;
 import com.mpmt.backend.entity.RoleType;
 import com.mpmt.backend.entity.User;
+import com.mpmt.backend.entity.Task;
 import com.mpmt.backend.service.ProjectMemberService;
 import com.mpmt.backend.service.ProjectService;
+import com.mpmt.backend.service.TaskService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,11 +19,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,7 +40,9 @@ class ProjectControllerTest {
     @MockBean
     private ProjectService projectService;
     @MockBean
-    private ProjectMemberService projectMemberService; // <--- Ajouté !
+    private ProjectMemberService projectMemberService;
+    @MockBean
+    private TaskService taskService;  // <-- Ajouté ici !
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -105,5 +111,20 @@ class ProjectControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].user.username").value("user_member"))
                 .andExpect(jsonPath("$[0].role").value("MEMBER"));
+    }
+
+    @Test
+    @DisplayName("GET /api/projects/{id}/tasks doit retourner les tâches du projet")
+    void shouldGetTasksForProject() throws Exception {
+        Task t1 = new Task(); t1.setId(1L); t1.setName("Tâche A");
+        Task t2 = new Task(); t2.setId(2L); t2.setName("Tâche B");
+
+        Mockito.when(taskService.getTasksByProjectId(42L)).thenReturn(Arrays.asList(t1, t2));
+
+        mockMvc.perform(get("/api/projects/42/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].name").value("Tâche A"))
+                .andExpect(jsonPath("$[1].name").value("Tâche B"));
     }
 }
